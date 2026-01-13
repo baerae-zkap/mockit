@@ -1,9 +1,9 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Smartphone, Monitor, Square, Check, Droplets, Palette, Grid3X3, ChevronUp } from 'lucide-react';
-import { GRADIENT_PRESETS, SOLID_COLORS, IPHONE_MODELS, IPHONE_COLORS, PIXEL_MODELS, PIXEL_COLORS } from '@/lib/constants';
-import type { DeviceType, BackgroundType, IPhoneModel, IPhoneColor, PixelModel, PixelColor } from '@/lib/types';
+import { Check, ChevronDown } from 'lucide-react';
+import { GRADIENT_PRESETS, SOLID_COLORS, IPHONE_MODELS, IPHONE_COLORS, PIXEL_MODELS, PIXEL_COLORS, BROWSER_CONFIGS } from '@/lib/constants';
+import type { DeviceType, BackgroundType, IPhoneModel, IPhoneColor, PixelModel, PixelColor, BrowserType, BrowserTheme } from '@/lib/types';
 
 interface LeftSidebarProps {
   deviceType: DeviceType;
@@ -14,6 +14,12 @@ interface LeftSidebarProps {
   iphoneColor: IPhoneColor;
   pixelModel: PixelModel;
   pixelColor: PixelColor;
+  browserType: BrowserType;
+  browserTheme: BrowserTheme;
+  addressUrl: string;
+  onAddressUrlChange: (url: string) => void;
+  tabName: string;
+  onTabNameChange: (name: string) => void;
   isModelPickerOpen: boolean;
   onDeviceChange: (device: DeviceType) => void;
   onBackgroundTypeChange: (type: BackgroundType) => void;
@@ -23,37 +29,16 @@ interface LeftSidebarProps {
   onIphoneColorChange: (color: IPhoneColor) => void;
   onPixelModelChange: (model: PixelModel) => void;
   onPixelColorChange: (color: PixelColor) => void;
+  onBrowserTypeChange: (type: BrowserType) => void;
+  onBrowserThemeChange: (theme: BrowserTheme) => void;
   onModelPickerOpenChange: (open: boolean) => void;
 }
 
-function SectionTitle({ children }: { children: React.ReactNode }) {
+function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="text-[11px] font-medium uppercase tracking-wider mb-3" style={{ color: 'var(--text-tertiary)' }}>
+    <span className="text-xs font-medium mb-3 block" style={{ color: 'var(--text-tertiary)' }}>
       {children}
-    </h3>
-  );
-}
-
-function OptionButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="flex flex-col items-center gap-1.5 p-3 rounded-lg transition-all"
-      style={{
-        background: active ? 'var(--active-bg)' : 'transparent',
-        color: active ? 'var(--text-primary)' : 'var(--text-secondary)',
-      }}
-    >
-      {children}
-    </button>
+    </span>
   );
 }
 
@@ -64,6 +49,12 @@ export function LeftSidebar({
   shadowIntensity,
   iphoneColor,
   pixelColor,
+  browserType,
+  browserTheme,
+  addressUrl,
+  onAddressUrlChange,
+  tabName,
+  onTabNameChange,
   isModelPickerOpen,
   onDeviceChange,
   onBackgroundTypeChange,
@@ -71,361 +62,406 @@ export function LeftSidebar({
   onShadowIntensityChange,
   onIphoneColorChange,
   onPixelColorChange,
+  onBrowserTypeChange,
+  onBrowserThemeChange,
   onModelPickerOpenChange,
 }: LeftSidebarProps) {
 
-  // Determine current device category
-  const getDeviceCategory = (): 'phone' | 'browser' | 'none' => {
-    if (deviceType === 'iphone' || deviceType === 'pixel') return 'phone';
-    if (deviceType === 'browser') return 'browser';
-    return 'none';
-  };
-
-  const deviceCategory = getDeviceCategory();
-
-  const deviceCategories: { type: 'phone' | 'browser' | 'none'; icon: React.ReactNode; label: string }[] = [
-    { type: 'phone', icon: <Smartphone className="w-4 h-4" />, label: 'Phone' },
-    { type: 'browser', icon: <Monitor className="w-4 h-4" />, label: 'Browser' },
-    { type: 'none', icon: <Square className="w-4 h-4" />, label: 'None' },
-  ];
-
-  const backgroundTypes: { type: BackgroundType; icon: React.ReactNode; label: string }[] = [
-    { type: 'gradient', icon: <Droplets className="w-4 h-4" />, label: 'Gradient' },
-    { type: 'solid', icon: <Palette className="w-4 h-4" />, label: 'Solid' },
-    { type: 'transparent', icon: <Grid3X3 className="w-4 h-4" />, label: 'None' },
+  const backgroundTypes: { type: BackgroundType; label: string }[] = [
+    { type: 'gradient', label: '그라디언트' },
+    { type: 'solid', label: '단색' },
+    { type: 'transparent', label: '투명' },
   ];
 
   const currentIphoneModel = IPHONE_MODELS[0];
   const currentPixelModel = PIXEL_MODELS[0];
 
-  // Get current phone model info
-  const getCurrentPhoneInfo = () => {
+  const getCurrentDeviceInfo = () => {
     if (deviceType === 'iphone') {
-      return { name: currentIphoneModel.name, resolution: currentIphoneModel.screenResolution, thumb: currentIphoneModel.thumbImage };
+      return { name: currentIphoneModel.name, thumb: currentIphoneModel.thumbImage };
     } else if (deviceType === 'pixel') {
-      return { name: currentPixelModel.name, resolution: currentPixelModel.screenResolution, thumb: currentPixelModel.thumbImage };
+      return { name: currentPixelModel.name, thumb: currentPixelModel.thumbImage };
+    } else if (deviceType === 'browser') {
+      const browser = BROWSER_CONFIGS.find(b => b.id === browserType);
+      return { name: browser?.name || 'Safari', thumb: browser?.themes.light.thumbImage || '' };
+    } else if (deviceType === 'none') {
+      return { name: 'None', thumb: '' };
     }
-    return { name: currentIphoneModel.name, resolution: currentIphoneModel.screenResolution, thumb: currentIphoneModel.thumbImage };
+    return { name: currentIphoneModel.name, thumb: currentIphoneModel.thumbImage };
   };
 
-  const currentPhone = getCurrentPhoneInfo();
-
-  const handleCategoryChange = (category: 'phone' | 'browser' | 'none') => {
-    if (category === 'phone') {
-      if (deviceType !== 'iphone' && deviceType !== 'pixel') {
-        onDeviceChange('iphone');
-      }
-    } else if (category === 'browser') {
-      onDeviceChange('browser');
-    } else {
-      onDeviceChange('none');
-    }
-  };
+  const currentDevice = getCurrentDeviceInfo();
 
   return (
     <aside
-      className="w-[260px] flex flex-col overflow-hidden border-r"
-      style={{
-        background: 'var(--bg-secondary)',
-        borderColor: 'var(--border-subtle)',
-      }}
+      className="w-72 flex flex-col overflow-hidden"
+      style={{ background: 'var(--bg-secondary)' }}
     >
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
-        {/* Device Category Selection */}
+      <div className="flex-1 overflow-y-auto p-5 space-y-8">
+        {/* Model Selection */}
         <section>
-          <SectionTitle>Device</SectionTitle>
-          <div
-            className="grid grid-cols-3 rounded-lg p-1"
-            style={{ background: 'var(--bg-tertiary)' }}
-          >
-            {deviceCategories.map(({ type, icon, label }) => (
-              <OptionButton
-                key={type}
-                active={deviceCategory === type}
-                onClick={() => handleCategoryChange(type)}
+          <SectionLabel>디바이스</SectionLabel>
+          <div className="relative">
+            <button
+              onClick={() => onModelPickerOpenChange(!isModelPickerOpen)}
+              className="w-full flex items-center gap-3 p-4 rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98]"
+              style={{ background: 'var(--bg-tertiary)' }}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-hover)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'var(--bg-tertiary)'}
+            >
+              <div
+                className="w-12 h-12 rounded-xl flex items-center justify-center"
+                style={{ background: 'var(--bg-hover)' }}
               >
-                {icon}
-                <span className="text-[11px] font-medium">{label}</span>
-              </OptionButton>
-            ))}
+                {currentDevice.thumb ? (
+                  <img
+                    src={currentDevice.thumb}
+                    alt={currentDevice.name}
+                    className="w-8 h-8 object-contain"
+                  />
+                ) : (
+                  <span className="text-xl" style={{ color: 'var(--text-tertiary)' }}>⊘</span>
+                )}
+              </div>
+              <div className="flex-1 text-left">
+                <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                  {currentDevice.name}
+                </p>
+              </div>
+              <ChevronDown
+                className="w-5 h-5 transition-transform"
+                style={{
+                  color: 'var(--text-tertiary)',
+                  transform: isModelPickerOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                }}
+              />
+            </button>
+
+            {/* Model Picker Popup */}
+            <AnimatePresence>
+              {isModelPickerOpen && (
+                <>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-[100]"
+                    onClick={() => onModelPickerOpenChange(false)}
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 8 }}
+                    transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                    className="fixed left-4 top-20 z-[101] p-6 rounded-3xl w-[560px] max-h-[85vh] overflow-y-auto"
+                    style={{
+                      background: 'var(--bg-elevated)',
+                      boxShadow: 'var(--shadow-lg)',
+                    }}
+                  >
+                    {/* Phone Section */}
+                    <p className="text-xs font-semibold mb-4 px-1" style={{ color: 'var(--text-tertiary)' }}>폰</p>
+                    <div className="grid grid-cols-2 gap-4 mb-6">
+                      {/* iPhone */}
+                      <motion.button
+                        whileHover={{ scale: 0.98 }}
+                        whileTap={{ scale: 0.96 }}
+                        onClick={() => {
+                          onDeviceChange('iphone');
+                          onModelPickerOpenChange(false);
+                        }}
+                        className="aspect-square flex flex-col items-center justify-center p-4 rounded-2xl transition-colors hover:bg-[var(--bg-hover)]"
+                        style={{
+                          background: deviceType === 'iphone' ? 'var(--accent-bg)' : 'var(--bg-tertiary)',
+                        }}
+                      >
+                        <div className="flex-1 w-full flex items-center justify-center p-2">
+                          <img src={currentIphoneModel.thumbImage} alt="" className="max-h-[180px] w-auto object-contain" />
+                        </div>
+                        <p className="text-base font-semibold mt-3" style={{ color: deviceType === 'iphone' ? 'var(--accent-primary)' : 'var(--text-primary)' }}>
+                          {currentIphoneModel.name}
+                        </p>
+                        <p className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>
+                          {currentIphoneModel.screenResolution}
+                        </p>
+                      </motion.button>
+
+                      {/* Pixel */}
+                      <motion.button
+                        whileHover={{ scale: 0.98 }}
+                        whileTap={{ scale: 0.96 }}
+                        onClick={() => {
+                          onDeviceChange('pixel');
+                          onModelPickerOpenChange(false);
+                        }}
+                        className="aspect-square flex flex-col items-center justify-center p-4 rounded-2xl transition-colors hover:bg-[var(--bg-hover)]"
+                        style={{
+                          background: deviceType === 'pixel' ? 'var(--accent-bg)' : 'var(--bg-tertiary)',
+                        }}
+                      >
+                        <div className="flex-1 w-full flex items-center justify-center p-2">
+                          <img src={currentPixelModel.thumbImage} alt="" className="max-h-[180px] w-auto object-contain" />
+                        </div>
+                        <p className="text-base font-semibold mt-3" style={{ color: deviceType === 'pixel' ? 'var(--accent-primary)' : 'var(--text-primary)' }}>
+                          {currentPixelModel.name}
+                        </p>
+                        <p className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>
+                          {currentPixelModel.screenResolution}
+                        </p>
+                      </motion.button>
+                    </div>
+
+                    {/* Browser Section */}
+                    <p className="text-xs font-semibold mb-4 px-1" style={{ color: 'var(--text-tertiary)' }}>브라우저</p>
+                    <div className="grid grid-cols-2 gap-4 mb-6">
+                      {/* Safari */}
+                      <motion.button
+                        whileHover={{ scale: 0.98 }}
+                        whileTap={{ scale: 0.96 }}
+                        onClick={() => {
+                          onDeviceChange('browser');
+                          onBrowserTypeChange('safari');
+                          onModelPickerOpenChange(false);
+                        }}
+                        className="aspect-square flex flex-col items-center justify-center p-4 rounded-2xl transition-colors hover:bg-[var(--bg-hover)]"
+                        style={{
+                          background: deviceType === 'browser' && browserType === 'safari' ? 'var(--accent-bg)' : 'var(--bg-tertiary)',
+                        }}
+                      >
+                        <div className="flex-1 w-full flex items-center justify-center p-2 rounded-xl overflow-hidden">
+                          <img src={BROWSER_CONFIGS.find(b => b.id === 'safari')?.themes.light.thumbImage} alt="" className="max-h-[180px] w-auto object-contain rounded-lg" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                        </div>
+                        <p className="text-base font-semibold mt-3" style={{ color: deviceType === 'browser' && browserType === 'safari' ? 'var(--accent-primary)' : 'var(--text-primary)' }}>
+                          Safari
+                        </p>
+                      </motion.button>
+
+                      {/* Chrome */}
+                      <motion.button
+                        whileHover={{ scale: 0.98 }}
+                        whileTap={{ scale: 0.96 }}
+                        onClick={() => {
+                          onDeviceChange('browser');
+                          onBrowserTypeChange('chrome');
+                          onModelPickerOpenChange(false);
+                        }}
+                        className="aspect-square flex flex-col items-center justify-center p-4 rounded-2xl transition-colors hover:bg-[var(--bg-hover)]"
+                        style={{
+                          background: deviceType === 'browser' && browserType === 'chrome' ? 'var(--accent-bg)' : 'var(--bg-tertiary)',
+                        }}
+                      >
+                        <div className="flex-1 w-full flex items-center justify-center p-2 rounded-xl overflow-hidden">
+                          <img src={BROWSER_CONFIGS.find(b => b.id === 'chrome')?.themes.light.thumbImage} alt="" className="max-h-[180px] w-auto object-contain rounded-lg" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                        </div>
+                        <p className="text-base font-semibold mt-3" style={{ color: deviceType === 'browser' && browserType === 'chrome' ? 'var(--accent-primary)' : 'var(--text-primary)' }}>
+                          Chrome
+                        </p>
+                      </motion.button>
+                    </div>
+
+                    {/* None Section */}
+                    <p className="text-xs font-semibold mb-4 px-1" style={{ color: 'var(--text-tertiary)' }}>기타</p>
+                    <div className="grid grid-cols-2 gap-4">
+                      <motion.button
+                        whileHover={{ scale: 0.98 }}
+                        whileTap={{ scale: 0.96 }}
+                        onClick={() => {
+                          onDeviceChange('none');
+                          onModelPickerOpenChange(false);
+                        }}
+                        className="aspect-square flex flex-col items-center justify-center p-4 rounded-2xl transition-colors hover:bg-[var(--bg-hover)]"
+                        style={{
+                          background: deviceType === 'none' ? 'var(--accent-bg)' : 'var(--bg-tertiary)',
+                        }}
+                      >
+                        <div className="flex-1 w-full flex items-center justify-center p-2">
+                          <div className="w-40 h-40 flex items-center justify-center rounded-2xl" style={{ background: 'var(--bg-hover)' }}>
+                            <span className="text-8xl" style={{ color: 'var(--text-tertiary)' }}>⊘</span>
+                          </div>
+                        </div>
+                        <p className="text-base font-semibold mt-3" style={{ color: deviceType === 'none' ? 'var(--accent-primary)' : 'var(--text-primary)' }}>
+                          None
+                        </p>
+                        <p className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>
+                          프레임 없이 이미지만
+                        </p>
+                      </motion.button>
+
+                      {/* Empty placeholder for grid alignment */}
+                      <div className="aspect-square" />
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
           </div>
         </section>
 
-        {/* Phone Model Selection - only when phone category is selected */}
-        <AnimatePresence>
-          {deviceCategory === 'phone' && (
-            <motion.section
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.15 }}
-            >
-              <SectionTitle>Model</SectionTitle>
-              <div className="relative">
-                <button
-                  onClick={() => onModelPickerOpenChange(!isModelPickerOpen)}
-                  className="w-full flex items-center gap-3 p-3 rounded-xl transition-all"
-                  style={{ background: 'var(--bg-tertiary)' }}
-                >
-                  <img
-                    src={currentPhone.thumb}
-                    alt={currentPhone.name}
-                    className="w-8 h-8 object-contain"
-                  />
-                  <div className="flex-1 text-left">
-                    <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
-                      {currentPhone.name}
-                    </p>
-                    <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
-                      {currentPhone.resolution}
-                  </p>
-                </div>
-                <ChevronUp
-                    className="w-4 h-4 transition-transform"
-                    style={{
-                      color: 'var(--text-tertiary)',
-                      transform: isModelPickerOpen ? 'rotate(0deg)' : 'rotate(180deg)',
-                    }}
-                  />
-                </button>
-
-                {/* Model Picker Popup */}
-                <AnimatePresence>
-                  {isModelPickerOpen && (
-                    <>
-                      {/* Backdrop */}
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[100]"
-                        onClick={() => onModelPickerOpenChange(false)}
-                      />
-                      {/* Popup */}
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                        transition={{ duration: 0.15 }}
-                        className="fixed z-[101] p-4 rounded-2xl shadow-2xl"
-                        style={{
-                          background: 'var(--bg-secondary)',
-                          border: '1px solid var(--border-subtle)',
-                          width: '400px',
-                          left: '16px',
-                          top: '180px',
-                        }}
-                      >
-                        {/* Grid of device cards */}
-                        <div className="grid grid-cols-2 gap-3">
-                          {/* iPhone Card */}
-                          <button
-                            onClick={() => {
-                              onDeviceChange('iphone');
-                              onModelPickerOpenChange(false);
-                            }}
-                            className="p-3 rounded-xl transition-all text-left"
-                            style={{
-                              background: 'var(--bg-tertiary)',
-                              border: `2px solid ${deviceType === 'iphone' ? 'var(--text-primary)' : 'transparent'}`,
-                            }}
-                          >
-                            <div className="flex items-start justify-between mb-2">
-                              <div>
-                                <p className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>
-                                  {currentIphoneModel.name}
-                                </p>
-                                <p className="text-[10px]" style={{ color: 'var(--text-tertiary)' }}>
-                                  {currentIphoneModel.screenResolution}
-                                </p>
-                              </div>
-                              <span
-                                className="text-[9px] font-semibold px-1.5 py-0.5 rounded"
-                                style={{ background: 'var(--text-primary)', color: 'var(--bg-primary)' }}
-                              >
-                                New
-                              </span>
-                            </div>
-                            <div className="flex justify-center py-4">
-                              <img
-                                src={currentIphoneModel.thumbImage}
-                                alt={currentIphoneModel.name}
-                                className="h-28 object-contain"
-                              />
-                            </div>
-                            {/* Color Options Preview */}
-                            <div className="flex gap-1.5 mt-2">
-                              {IPHONE_COLORS.slice(0, 3).map((color) => (
-                                <div
-                                  key={color.id}
-                                  className="w-7 h-7 rounded-lg overflow-hidden"
-                                  style={{ background: 'var(--bg-elevated)' }}
-                                >
-                                  <img
-                                    src={color.thumbImage}
-                                    alt={color.name}
-                                    className="w-full h-full object-contain"
-                                  />
-                                </div>
-                              ))}
-                              {IPHONE_COLORS.length > 3 && (
-                                <div
-                                  className="w-7 h-7 rounded-lg flex items-center justify-center text-[9px] font-medium"
-                                  style={{ background: 'var(--bg-elevated)', color: 'var(--text-tertiary)' }}
-                                >
-                                  +{IPHONE_COLORS.length - 3}
-                                </div>
-                              )}
-                            </div>
-                          </button>
-
-                          {/* Pixel Card */}
-                          <button
-                            onClick={() => {
-                              onDeviceChange('pixel');
-                              onModelPickerOpenChange(false);
-                            }}
-                            className="p-3 rounded-xl transition-all text-left"
-                            style={{
-                              background: 'var(--bg-tertiary)',
-                              border: `2px solid ${deviceType === 'pixel' ? 'var(--text-primary)' : 'transparent'}`,
-                            }}
-                          >
-                            <div className="flex items-start justify-between mb-2">
-                              <div>
-                                <p className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>
-                                  {currentPixelModel.name}
-                                </p>
-                                <p className="text-[10px]" style={{ color: 'var(--text-tertiary)' }}>
-                                  {currentPixelModel.screenResolution}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex justify-center py-4">
-                              <img
-                                src={currentPixelModel.thumbImage}
-                                alt={currentPixelModel.name}
-                                className="h-28 object-contain"
-                              />
-                            </div>
-                            {/* Color Options Preview */}
-                            <div className="flex gap-1.5 mt-2">
-                              {PIXEL_COLORS.slice(0, 3).map((color) => (
-                                <div
-                                  key={color.id}
-                                  className="w-7 h-7 rounded-lg overflow-hidden"
-                                  style={{ background: 'var(--bg-elevated)' }}
-                                >
-                                  <img
-                                    src={color.thumbImage}
-                                    alt={color.name}
-                                    className="w-full h-full object-contain"
-                                  />
-                                </div>
-                              ))}
-                              {PIXEL_COLORS.length > 3 && (
-                                <div
-                                  className="w-7 h-7 rounded-lg flex items-center justify-center text-[9px] font-medium"
-                                  style={{ background: 'var(--bg-elevated)', color: 'var(--text-tertiary)' }}
-                                >
-                                  +{PIXEL_COLORS.length - 3}
-                                </div>
-                              )}
-                            </div>
-                          </button>
-                        </div>
-                      </motion.div>
-                    </>
-                  )}
-                </AnimatePresence>
-              </div>
-            </motion.section>
-          )}
-        </AnimatePresence>
-
-        {/* iPhone Style Selection */}
+        {/* Style Selection */}
         {deviceType === 'iphone' && (
           <section>
-            <SectionTitle>Style</SectionTitle>
+            <SectionLabel>스타일</SectionLabel>
             <div className="grid grid-cols-3 gap-2">
-              {IPHONE_COLORS.map((colorOption) => (
-                <button
-                  key={colorOption.id}
-                  onClick={() => onIphoneColorChange(colorOption.id)}
-                  className="relative flex flex-col items-center gap-1 p-2 rounded-lg transition-all"
-                  style={{
-                    background: iphoneColor === colorOption.id ? 'var(--active-bg)' : 'var(--bg-tertiary)',
-                    border: `1px solid ${iphoneColor === colorOption.id ? 'var(--border-strong)' : 'transparent'}`,
-                  }}
-                >
-                  <div className="relative w-full aspect-square flex items-center justify-center">
+              {IPHONE_COLORS.map((colorOption) => {
+                const isSelected = iphoneColor === colorOption.id;
+                return (
+                  <motion.button
+                    key={colorOption.id}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => onIphoneColorChange(colorOption.id)}
+                    className="flex flex-col items-center gap-2 p-3 rounded-xl transition-colors"
+                    style={{
+                      background: isSelected ? 'var(--accent-bg)' : 'var(--bg-tertiary)',
+                    }}
+                    onMouseEnter={(e) => !isSelected && (e.currentTarget.style.background = 'var(--bg-hover)')}
+                    onMouseLeave={(e) => !isSelected && (e.currentTarget.style.background = 'var(--bg-tertiary)')}
+                  >
                     <img
                       src={colorOption.thumbImage}
                       alt={colorOption.name}
-                      className="w-12 h-12 object-contain"
+                      className="w-10 h-10 object-contain"
                     />
-                    {colorOption.is3D && (
-                      <span
-                        className="absolute bottom-0 right-0 text-[9px] font-medium px-1 py-0.5 rounded"
-                        style={{ background: 'var(--bg-elevated)', color: 'var(--text-tertiary)' }}
-                      >
-                        3D
-                      </span>
-                    )}
-                  </div>
-                  <span className="text-[10px]" style={{ color: 'var(--text-secondary)' }}>
-                    {colorOption.name}
-                  </span>
-                </button>
-              ))}
+                    <span
+                      className="text-[11px] font-medium"
+                      style={{ color: isSelected ? 'var(--accent-primary)' : 'var(--text-secondary)' }}
+                    >
+                      {colorOption.name}
+                    </span>
+                  </motion.button>
+                );
+              })}
             </div>
           </section>
         )}
 
-        {/* Pixel Style Selection */}
         {deviceType === 'pixel' && (
           <section>
-            <SectionTitle>Style</SectionTitle>
+            <SectionLabel>스타일</SectionLabel>
             <div className="grid grid-cols-3 gap-2">
-              {PIXEL_COLORS.map((colorOption) => (
-                <button
-                  key={colorOption.id}
-                  onClick={() => onPixelColorChange(colorOption.id)}
-                  className="relative flex flex-col items-center gap-1 p-2 rounded-lg transition-all"
-                  style={{
-                    background: pixelColor === colorOption.id ? 'var(--active-bg)' : 'var(--bg-tertiary)',
-                    border: `1px solid ${pixelColor === colorOption.id ? 'var(--border-strong)' : 'transparent'}`,
-                  }}
-                >
-                  <div className="relative w-full aspect-square flex items-center justify-center">
+              {PIXEL_COLORS.map((colorOption) => {
+                const isSelected = pixelColor === colorOption.id;
+                return (
+                  <motion.button
+                    key={colorOption.id}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => onPixelColorChange(colorOption.id)}
+                    className="flex flex-col items-center gap-2 p-3 rounded-xl transition-colors"
+                    style={{
+                      background: isSelected ? 'var(--accent-bg)' : 'var(--bg-tertiary)',
+                    }}
+                    onMouseEnter={(e) => !isSelected && (e.currentTarget.style.background = 'var(--bg-hover)')}
+                    onMouseLeave={(e) => !isSelected && (e.currentTarget.style.background = 'var(--bg-tertiary)')}
+                  >
                     <img
                       src={colorOption.thumbImage}
                       alt={colorOption.name}
-                      className="w-12 h-12 object-contain"
+                      className="w-10 h-10 object-contain"
                     />
-                    {colorOption.is3D && (
-                      <span
-                        className="absolute bottom-0 right-0 text-[9px] font-medium px-1 py-0.5 rounded"
-                        style={{ background: 'var(--bg-elevated)', color: 'var(--text-tertiary)' }}
-                      >
-                        3D
-                      </span>
-                    )}
-                  </div>
-                  <span className="text-[10px]" style={{ color: 'var(--text-secondary)' }}>
-                    {colorOption.name}
-                  </span>
-                </button>
-              ))}
+                    <span
+                      className="text-[11px] font-medium"
+                      style={{ color: isSelected ? 'var(--accent-primary)' : 'var(--text-secondary)' }}
+                    >
+                      {colorOption.name}
+                    </span>
+                  </motion.button>
+                );
+              })}
             </div>
           </section>
+        )}
+
+        {deviceType === 'browser' && (
+          <>
+            <section>
+              <SectionLabel>테마</SectionLabel>
+              <div className="grid grid-cols-2 gap-2">
+                {(['light', 'dark'] as const).map((theme) => {
+                  const currentBrowser = BROWSER_CONFIGS.find(b => b.id === browserType);
+                  const themeConfig = currentBrowser?.themes[theme];
+                  const isSelected = browserTheme === theme;
+                  return (
+                    <motion.button
+                      key={`${browserType}-${theme}`}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => {
+                        onBrowserThemeChange(theme);
+                      }}
+                      className="flex flex-col items-center gap-2 p-3 rounded-xl transition-colors"
+                      style={{
+                        background: isSelected ? 'var(--accent-bg)' : 'var(--bg-tertiary)',
+                      }}
+                      onMouseEnter={(e) => !isSelected && (e.currentTarget.style.background = 'var(--bg-hover)')}
+                      onMouseLeave={(e) => !isSelected && (e.currentTarget.style.background = 'var(--bg-tertiary)')}
+                    >
+                      <div className="w-full aspect-video rounded-lg overflow-hidden">
+                        <img
+                          src={themeConfig?.thumbImage}
+                          alt={`${currentBrowser?.name} ${theme}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <span
+                        className="text-[11px] font-medium"
+                        style={{ color: isSelected ? 'var(--accent-primary)' : 'var(--text-secondary)' }}
+                      >
+                        {theme === 'light' ? 'Light' : 'Dark'}
+                      </span>
+                    </motion.button>
+                  );
+                })}
+              </div>
+            </section>
+
+            {browserType === 'chrome' && (
+              <section>
+                <SectionLabel>탭 이름</SectionLabel>
+                <input
+                  type="text"
+                  value={tabName}
+                  onChange={(e) => onTabNameChange(e.target.value)}
+                  placeholder="New Tab"
+                  className="w-full px-4 py-3 rounded-xl text-sm transition-colors"
+                  style={{
+                    background: 'var(--bg-tertiary)',
+                    color: 'var(--text-primary)',
+                    border: 'none',
+                    outline: 'none',
+                  }}
+                  onFocus={(e) => e.currentTarget.style.background = 'var(--bg-hover)'}
+                  onBlur={(e) => e.currentTarget.style.background = 'var(--bg-tertiary)'}
+                />
+              </section>
+            )}
+
+            <section>
+              <SectionLabel>주소</SectionLabel>
+              <input
+                type="text"
+                value={addressUrl}
+                onChange={(e) => onAddressUrlChange(e.target.value)}
+                placeholder="yourapp.com"
+                className="w-full px-4 py-3 rounded-xl text-sm transition-colors"
+                style={{
+                  background: 'var(--bg-tertiary)',
+                  color: 'var(--text-primary)',
+                  border: 'none',
+                  outline: 'none',
+                }}
+                onFocus={(e) => e.currentTarget.style.background = 'var(--bg-hover)'}
+                onBlur={(e) => e.currentTarget.style.background = 'var(--bg-tertiary)'}
+              />
+            </section>
+          </>
         )}
 
         {/* Shadow */}
         <section>
           <div className="flex items-center justify-between mb-3">
-            <SectionTitle>Shadow</SectionTitle>
-            <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
+            <SectionLabel>그림자</SectionLabel>
+            <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
               {shadowIntensity}%
             </span>
           </div>
@@ -441,15 +477,14 @@ export function LeftSidebar({
 
         {/* Background */}
         <section>
-          <SectionTitle>Background</SectionTitle>
+          <SectionLabel>배경</SectionLabel>
           <div
-            className="grid grid-cols-3 rounded-lg p-1 mb-4"
+            className="flex rounded-xl p-1 mb-4"
             style={{ background: 'var(--bg-tertiary)' }}
           >
-            {backgroundTypes.map(({ type, icon, label }) => (
-              <OptionButton
+            {backgroundTypes.map(({ type, label }) => (
+              <button
                 key={type}
-                active={backgroundType === type}
                 onClick={() => {
                   onBackgroundTypeChange(type);
                   if (type === 'transparent') {
@@ -460,10 +495,25 @@ export function LeftSidebar({
                     onBackgroundValueChange(SOLID_COLORS[0]);
                   }
                 }}
+                className="flex-1 py-2.5 rounded-lg text-xs font-medium transition-all hover:scale-[1.02] active:scale-[0.98]"
+                style={{
+                  background: backgroundType === type ? 'var(--bg-secondary)' : 'transparent',
+                  color: backgroundType === type ? 'var(--text-primary)' : 'var(--text-tertiary)',
+                  boxShadow: backgroundType === type ? 'var(--shadow-sm)' : 'none',
+                }}
+                onMouseEnter={(e) => {
+                  if (backgroundType !== type) {
+                    e.currentTarget.style.color = 'var(--text-secondary)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (backgroundType !== type) {
+                    e.currentTarget.style.color = 'var(--text-tertiary)';
+                  }
+                }}
               >
-                {icon}
-                <span className="text-[11px] font-medium">{label}</span>
-              </OptionButton>
+                {label}
+              </button>
             ))}
           </div>
 
@@ -480,16 +530,16 @@ export function LeftSidebar({
                   <button
                     key={preset.id}
                     onClick={() => onBackgroundValueChange(preset.style)}
-                    className="relative w-full aspect-square rounded-lg overflow-hidden transition-transform hover:scale-95"
+                    className="relative w-full aspect-square rounded-xl overflow-hidden transition-all active:scale-95 hover:scale-105"
                     style={{
                       background: preset.style,
-                      boxShadow: backgroundValue === preset.style ? '0 0 0 2px var(--text-primary)' : 'none',
+                      boxShadow: backgroundValue === preset.style ? '0 0 0 2px var(--accent-primary)' : 'none',
                     }}
                     title={preset.name}
                   >
                     {backgroundValue === preset.style && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                        <Check className="w-3.5 h-3.5 text-white" />
+                        <Check className="w-4 h-4 text-white" />
                       </div>
                     )}
                   </button>
@@ -505,22 +555,22 @@ export function LeftSidebar({
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className="grid grid-cols-6 gap-1.5"
+                className="grid grid-cols-6 gap-2"
               >
                 {SOLID_COLORS.map((color) => (
                   <button
                     key={color}
                     onClick={() => onBackgroundValueChange(color)}
-                    className="relative w-full aspect-square rounded-md overflow-hidden transition-transform hover:scale-90"
+                    className="relative w-full aspect-square rounded-xl overflow-hidden transition-all active:scale-95 hover:scale-110"
                     style={{
                       backgroundColor: color,
-                      boxShadow: backgroundValue === color ? '0 0 0 2px var(--text-primary)' : 'none',
+                      boxShadow: backgroundValue === color ? '0 0 0 2px var(--accent-primary)' : 'none',
                     }}
                     title={color}
                   >
                     {backgroundValue === color && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                        <Check className="w-2.5 h-2.5 text-white" />
+                        <Check className="w-3 h-3 text-white" />
                       </div>
                     )}
                   </button>

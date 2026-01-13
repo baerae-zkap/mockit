@@ -10,9 +10,9 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="relative w-10 h-10 rounded-full flex items-center justify-center transition-colors"
+      className="relative w-10 h-10 rounded-full flex items-center justify-center transition-all hover:bg-[var(--bg-hover)] active:scale-95"
       style={{
-        background: 'var(--hover-bg)',
+        background: 'var(--bg-tertiary)',
       }}
       aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
     >

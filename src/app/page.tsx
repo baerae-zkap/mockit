@@ -13,7 +13,7 @@ import { LeftSidebar, RightSidebar } from '@/components/Sidebar';
 import { ExportModal } from '@/components/ExportModal';
 import { usePaste } from '@/hooks/usePaste';
 import { DEFAULT_STATE } from '@/lib/constants';
-import type { DeviceType, BackgroundType, IPhoneModel, IPhoneColor, PixelModel, PixelColor } from '@/lib/types';
+import type { DeviceType, BackgroundType, IPhoneModel, IPhoneColor, PixelModel, PixelColor, BrowserType, BrowserTheme } from '@/lib/types';
 
 export default function Home() {
   const [image, setImage] = useState<string | null>(DEFAULT_STATE.image);
@@ -29,12 +29,17 @@ export default function Home() {
   const [iphoneColor, setIphoneColor] = useState<IPhoneColor>(DEFAULT_STATE.iphoneColor);
   const [pixelModel, setPixelModel] = useState<PixelModel>(DEFAULT_STATE.pixelModel);
   const [pixelColor, setPixelColor] = useState<PixelColor>(DEFAULT_STATE.pixelColor);
+  const [browserType, setBrowserType] = useState<BrowserType>(DEFAULT_STATE.browserType);
+  const [browserTheme, setBrowserTheme] = useState<BrowserTheme>(DEFAULT_STATE.browserTheme);
+  const [addressUrl, setAddressUrl] = useState('');
+  const [tabName, setTabName] = useState('');
   const [mockupScale, setMockupScale] = useState(100);
   const [isExporting, setIsExporting] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isModelPickerOpen, setIsModelPickerOpen] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
   const [showCopyToast, setShowCopyToast] = useState(false);
+  const [showPasteToast, setShowPasteToast] = useState(false);
 
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -49,10 +54,18 @@ export default function Home() {
     }
   }, []);
 
-  const handleImageChange = useCallback((newImage: string) => {
+  const handleImageChange = useCallback((newImage: string, showToast = false) => {
     setOriginalImage(newImage); // Store original
     processImageForDevice(newImage, deviceType);
+    if (showToast) {
+      setShowPasteToast(true);
+      setTimeout(() => setShowPasteToast(false), 2000);
+    }
   }, [deviceType, processImageForDevice]);
+
+  const handlePaste = useCallback((newImage: string) => {
+    handleImageChange(newImage, true);
+  }, [handleImageChange]);
 
   // Re-process image when device type changes
   useEffect(() => {
@@ -61,7 +74,7 @@ export default function Home() {
     }
   }, [deviceType, originalImage, processImageForDevice]);
 
-  usePaste(handleImageChange);
+  usePaste(handlePaste);
 
   const handleCopyToClipboard = useCallback(async () => {
     if (!canvasRef.current || isCopying) return;
@@ -175,6 +188,8 @@ export default function Home() {
           iphoneColor={iphoneColor}
           pixelModel={pixelModel}
           pixelColor={pixelColor}
+          browserType={browserType}
+          browserTheme={browserTheme}
           onDeviceChange={setDeviceType}
           onBackgroundTypeChange={setBackgroundType}
           onBackgroundValueChange={setBackgroundValue}
@@ -183,6 +198,12 @@ export default function Home() {
           onIphoneColorChange={setIphoneColor}
           onPixelModelChange={setPixelModel}
           onPixelColorChange={setPixelColor}
+          onBrowserTypeChange={setBrowserType}
+          onBrowserThemeChange={setBrowserTheme}
+          addressUrl={addressUrl}
+          onAddressUrlChange={setAddressUrl}
+          tabName={tabName}
+          onTabNameChange={setTabName}
           isModelPickerOpen={isModelPickerOpen}
           onModelPickerOpenChange={setIsModelPickerOpen}
         />
@@ -200,6 +221,10 @@ export default function Home() {
           iphoneColor={iphoneColor}
           pixelModel={pixelModel}
           pixelColor={pixelColor}
+          browserType={browserType}
+          browserTheme={browserTheme}
+          addressUrl={addressUrl}
+          tabName={tabName}
           mockupScale={mockupScale}
           onImageChange={handleImageChange}
         />
@@ -227,7 +252,7 @@ export default function Home() {
         canvasHeight={canvasHeight}
       />
 
-      {/* Copy Toast */}
+      {/* Toasts */}
       <AnimatePresence>
         {showCopyToast && (
           <motion.div
@@ -235,15 +260,27 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2.5 rounded-full shadow-lg z-50"
-            style={{
-              background: 'var(--bg-elevated)',
-              border: '1px solid var(--border-subtle)',
-            }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2.5 rounded-2xl z-50"
+            style={{ background: 'var(--bg-elevated)', boxShadow: 'var(--shadow-md)' }}
           >
-            <Check className="w-4 h-4" style={{ color: 'var(--text-primary)' }} />
+            <Check className="w-4 h-4" style={{ color: 'var(--accent-primary)' }} />
             <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
-              Copied to clipboard
+              클립보드에 복사됨
+            </span>
+          </motion.div>
+        )}
+        {showPasteToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.2 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2.5 rounded-2xl z-50"
+            style={{ background: 'var(--bg-elevated)', boxShadow: 'var(--shadow-md)' }}
+          >
+            <Check className="w-4 h-4" style={{ color: 'var(--accent-primary)' }} />
+            <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+              이미지 붙여넣기 완료
             </span>
           </motion.div>
         )}

@@ -10,8 +10,10 @@ interface BrowserFrameProps {
   browserType: BrowserType;
   browserTheme: BrowserTheme;
   addressUrl: string;
+  tabName?: string;
   windowScale: number; // 50-150 percentage scale for entire window
   windowAspectRatio: 'auto' | '16:9' | '4:3' | '1:1';
+  shadowIntensity: number; // 0-100 shadow intensity
   onImageSelect: (image: string) => void;
 }
 
@@ -141,26 +143,26 @@ function SafariTitleBar({ theme, addressUrl }: { theme: BrowserTheme; addressUrl
   );
 }
 
-function ChromeTitleBar({ theme, addressUrl }: { theme: BrowserTheme; addressUrl: string }) {
+function ChromeTitleBar({ theme, addressUrl, tabName }: { theme: BrowserTheme; addressUrl: string; tabName?: string }) {
   const styles = chromeStyles[theme];
 
   return (
     <>
       {/* Tab Bar */}
       <div
-        className="flex items-end h-9 px-2 pt-2"
+        className="flex items-center h-9 px-3 pt-1"
         style={{ background: styles.tabBar }}
       >
         <TrafficLights theme={theme} />
         {/* Active Tab */}
         <div
-          className="ml-4 px-4 py-1.5 rounded-t-lg text-xs font-medium"
+          className="ml-4 px-4 py-1.5 rounded-t-lg text-xs font-medium self-end"
           style={{
             background: styles.activeTab,
             color: styles.urlText,
           }}
         >
-          New Tab
+          {tabName || 'New Tab'}
         </div>
       </div>
 
@@ -230,8 +232,10 @@ export function BrowserFrame({
   browserType = 'safari',
   browserTheme = 'light',
   addressUrl = '',
+  tabName = '',
   windowScale = 100,
   windowAspectRatio = 'auto',
+  shadowIntensity = 50,
   onImageSelect,
 }: BrowserFrameProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -239,6 +243,12 @@ export function BrowserFrame({
   const styles = browserType === 'safari' ? safariStyles[browserTheme] : chromeStyles[browserTheme];
   const scale = windowScale / 100; // Convert percentage to scale factor
   const baseWidth = 800; // Base window width
+
+  // Calculate dynamic shadow based on intensity (matching phone shadow)
+  const shadowOpacity = shadowIntensity / 100;
+  const shadowBlur = 20 + (shadowIntensity * 0.8);
+  const shadowSpread = shadowIntensity * 0.3;
+  const dropShadow = `drop-shadow(0 ${shadowSpread}px ${shadowBlur}px rgba(0, 0, 0, ${shadowOpacity}))`;
 
   // Calculate content dimensions based on aspect ratio
   const contentDimensions = useMemo(() => {
@@ -300,14 +310,14 @@ export function BrowserFrame({
           background: styles.frame,
           borderRadius: '12px',
           width: baseWidth,
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05)',
+          filter: dropShadow,
         }}
       >
         {/* Title Bar */}
         {browserType === 'safari' ? (
           <SafariTitleBar theme={browserTheme} addressUrl={addressUrl} />
         ) : (
-          <ChromeTitleBar theme={browserTheme} addressUrl={addressUrl} />
+          <ChromeTitleBar theme={browserTheme} addressUrl={addressUrl} tabName={tabName} />
         )}
 
         {/* Content Area */}

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, ImagePlus } from 'lucide-react';
 import { useDrop } from '@/hooks/useDrop';
 import { IPhoneFrame, BrowserFrame, PixelFrame } from './devices';
-import type { DeviceType, IPhoneModel, IPhoneColor, PixelModel, PixelColor } from '@/lib/types';
+import type { DeviceType, IPhoneModel, IPhoneColor, PixelModel, PixelColor, BrowserType, BrowserTheme } from '@/lib/types';
 
 interface NoneFrameProps {
   image: string | null;
@@ -52,13 +52,13 @@ function NoneFrame({ image, shadowIntensity, onImageSelect }: NoneFrameProps) {
         <img
           src={image}
           alt="Screenshot"
-          style={{ borderRadius: '12px' }}
+          style={{ borderRadius: '16px' }}
           draggable={false}
         />
-        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl backdrop-blur-sm">
+        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center rounded-2xl">
           <div className="text-center">
-            <ImagePlus className="w-6 h-6 text-white mb-1 mx-auto" />
-            <p className="text-white text-xs font-medium">Change</p>
+            <ImagePlus className="w-6 h-6 text-white mb-2 mx-auto" />
+            <p className="text-white text-xs font-medium">이미지 변경</p>
           </div>
         </div>
         <input
@@ -76,17 +76,22 @@ function NoneFrame({ image, shadowIntensity, onImageSelect }: NoneFrameProps) {
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="flex flex-col items-center justify-center w-64 h-64 rounded-xl cursor-pointer transition-all"
+      className="flex flex-col items-center justify-center w-72 h-72 rounded-2xl cursor-pointer transition-colors"
       style={{
         background: 'var(--bg-tertiary)',
-        border: '2px dashed var(--border-default)',
+        border: '2px dashed var(--text-muted)',
       }}
       onClick={handleClick}
-      whileHover={{ scale: 1.02 }}
+      whileHover={{ borderColor: 'var(--accent-primary)' }}
     >
-      <ImagePlus className="w-8 h-8 mb-2" style={{ color: 'var(--text-tertiary)' }} />
-      <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Select Image</p>
-      <p className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>Click to upload</p>
+      <div
+        className="w-12 h-12 rounded-xl flex items-center justify-center mb-3"
+        style={{ background: 'var(--accent-primary)' }}
+      >
+        <ImagePlus className="w-6 h-6 text-white" />
+      </div>
+      <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>이미지 선택</p>
+      <p className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>클릭하거나 붙여넣기</p>
       <input
         ref={fileInputRef}
         type="file"
@@ -110,13 +115,17 @@ interface CanvasProps {
   iphoneColor: IPhoneColor;
   pixelModel: PixelModel;
   pixelColor: PixelColor;
+  browserType: BrowserType;
+  browserTheme: BrowserTheme;
+  addressUrl: string;
+  tabName: string;
   mockupScale: number;
   onImageChange: (image: string) => void;
 }
 
 export const Canvas = forwardRef<HTMLDivElement, CanvasProps>(
   function Canvas(
-    { image, deviceType, background, shadowIntensity, zoom, canvasWidth, canvasHeight, iphoneModel, iphoneColor, pixelModel, pixelColor, mockupScale, onImageChange },
+    { image, deviceType, background, shadowIntensity, zoom, canvasWidth, canvasHeight, iphoneModel, iphoneColor, pixelModel, pixelColor, browserType, browserTheme, addressUrl, tabName, mockupScale, onImageChange },
     ref
   ) {
     const containerRef = useReactRef<HTMLDivElement>(null);
@@ -178,11 +187,13 @@ export const Canvas = forwardRef<HTMLDivElement, CanvasProps>(
           return (
             <BrowserFrame
               image={image}
-              browserType="safari"
-              browserTheme="light"
-              addressUrl=""
+              browserType={browserType}
+              browserTheme={browserTheme}
+              addressUrl={addressUrl}
+              tabName={tabName}
               windowScale={100}
               windowAspectRatio="auto"
+              shadowIntensity={shadowIntensity}
               onImageSelect={onImageChange}
             />
           );
@@ -209,28 +220,20 @@ export const Canvas = forwardRef<HTMLDivElement, CanvasProps>(
 
     return (
       <div
-        className="flex-1 flex items-center justify-center p-6 overflow-hidden"
+        ref={containerRef}
+        className="flex-1 flex items-center justify-center p-6 overflow-hidden relative"
         style={{ background: 'var(--bg-primary)' }}
+        {...dragProps}
       >
-        <div
-          ref={containerRef}
-          className="relative w-full h-full flex items-center justify-center rounded-xl overflow-hidden"
-          style={{
-            background: 'var(--bg-tertiary)',
-            border: '1px solid var(--border-subtle)',
-          }}
-          {...dragProps}
-        >
           {/* Canvas Preview Area */}
           <div
-            className="relative shrink-0 rounded-lg"
+            className="relative shrink-0 rounded-xl overflow-hidden"
             style={{
               width: canvasWidth,
               height: canvasHeight,
               aspectRatio: `${canvasWidth} / ${canvasHeight}`,
-              // Checkerboard pattern for transparent preview (not exported)
               background: background === 'transparent'
-                ? 'repeating-conic-gradient(#e5e5e5 0% 25%, #ffffff 0% 50%) 50% / 20px 20px'
+                ? 'repeating-conic-gradient(rgba(128,128,128,0.15) 0% 25%, rgba(128,128,128,0.05) 0% 50%) 50% / 20px 20px'
                 : 'transparent',
               transform: `scale(${previewScale * (zoom / 100)})`,
               transformOrigin: 'center center',
@@ -261,36 +264,39 @@ export const Canvas = forwardRef<HTMLDivElement, CanvasProps>(
             </div>
           </div>
 
-          {/* Drag Overlay */}
-          <AnimatePresence>
-            {isDragging && (
+        {/* Drag Overlay */}
+        <AnimatePresence>
+          {isDragging && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 flex items-center justify-center z-50"
+              style={{
+                background: 'var(--accent-bg)',
+                border: '2px dashed var(--accent-primary)',
+              }}
+            >
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute inset-0 backdrop-blur-sm flex items-center justify-center z-50 rounded-xl"
-                style={{
-                  background: 'var(--active-bg)',
-                  border: '2px dashed var(--text-primary)',
-                }}
+                className="text-center p-6 rounded-2xl"
+                style={{ background: 'var(--bg-elevated)' }}
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
               >
                 <motion.div
-                  className="text-center"
-                  initial={{ scale: 0.9 }}
-                  animate={{ scale: 1 }}
+                  animate={{ y: [0, -6, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                  className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3"
+                  style={{ background: 'var(--accent-primary)' }}
                 >
-                  <motion.div
-                    animate={{ y: [0, -10, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                  >
-                    <Upload className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--text-primary)' }} />
-                  </motion.div>
-                  <p className="font-medium" style={{ color: 'var(--text-primary)' }}>Drop your image here</p>
+                  <Upload className="w-6 h-6 text-white" />
                 </motion.div>
+                <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>이미지를 놓으세요</p>
+                <p className="text-sm mt-1" style={{ color: 'var(--text-tertiary)' }}>PNG, JPEG 지원</p>
               </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     );
   }

@@ -15,11 +15,11 @@ interface RightSidebarProps {
   isExporting: boolean;
 }
 
-function SectionTitle({ children }: { children: React.ReactNode }) {
+function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="text-[11px] font-medium uppercase tracking-wider mb-3" style={{ color: 'var(--text-tertiary)' }}>
+    <span className="text-xs font-medium mb-3 block" style={{ color: 'var(--text-tertiary)' }}>
       {children}
-    </h3>
+    </span>
   );
 }
 
@@ -33,11 +33,13 @@ function IconButton({
   return (
     <button
       onClick={onClick}
-      className="p-2 rounded-lg transition-colors"
+      className="p-2.5 rounded-xl transition-all active:scale-95 hover:scale-105"
       style={{
         background: 'var(--bg-tertiary)',
         color: 'var(--text-secondary)',
       }}
+      onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-hover)'}
+      onMouseLeave={(e) => e.currentTarget.style.background = 'var(--bg-tertiary)'}
     >
       {children}
     </button>
@@ -61,22 +63,22 @@ export function RightSidebar({
 
   return (
     <aside
-      className="w-[260px] flex flex-col overflow-hidden border-l"
-      style={{
-        background: 'var(--bg-secondary)',
-        borderColor: 'var(--border-subtle)',
-      }}
+      className="w-72 flex flex-col overflow-hidden"
+      style={{ background: 'var(--bg-secondary)' }}
     >
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
+      <div className="flex-1 overflow-y-auto p-5 space-y-8">
         {/* Mockup Scale */}
         <section>
           <div className="flex items-center justify-between mb-3">
-            <SectionTitle>Mockup Size</SectionTitle>
-            <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
+            <SectionLabel>목업 크기</SectionLabel>
+            <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
               {mockupScale}%
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div
+            className="flex items-center gap-2 p-2 rounded-2xl"
+            style={{ background: 'var(--bg-tertiary)' }}
+          >
             <IconButton onClick={() => onMockupScaleChange(Math.max(25, mockupScale - 25))}>
               <Smartphone className="w-3.5 h-3.5" />
             </IconButton>
@@ -98,12 +100,15 @@ export function RightSidebar({
         {/* Zoom Controls */}
         <section>
           <div className="flex items-center justify-between mb-3">
-            <SectionTitle>Preview Zoom</SectionTitle>
-            <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
+            <SectionLabel>미리보기 확대</SectionLabel>
+            <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
               {zoom}%
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div
+            className="flex items-center gap-2 p-2 rounded-2xl"
+            style={{ background: 'var(--bg-tertiary)' }}
+          >
             <IconButton onClick={() => onZoomChange(Math.max(25, zoom - 25))}>
               <ZoomOut className="w-4 h-4" />
             </IconButton>
@@ -124,37 +129,55 @@ export function RightSidebar({
 
         {/* Canvas Size */}
         <section>
-          <SectionTitle>Canvas Size</SectionTitle>
+          <SectionLabel>캔버스 크기</SectionLabel>
           <div className="space-y-1">
-            {CANVAS_SIZES.map((size) => (
-              <button
-                key={size.label}
-                onClick={() => onCanvasSizeChange(size.width, size.height)}
-                className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all text-left"
-                style={{
-                  background: currentPreset?.label === size.label ? 'var(--active-bg)' : 'transparent',
-                  color: currentPreset?.label === size.label ? 'var(--text-primary)' : 'var(--text-secondary)',
-                }}
-              >
-                <div className="flex items-center gap-2">
-                  <Maximize2 className="w-3.5 h-3.5" />
-                  <span className="text-sm">{size.label}</span>
-                </div>
-                <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
-                  {size.width}×{size.height}
-                </span>
-              </button>
-            ))}
+            {CANVAS_SIZES.map((size) => {
+              const isSelected = currentPreset?.label === size.label;
+              return (
+                <button
+                  key={size.label}
+                  onClick={() => onCanvasSizeChange(size.width, size.height)}
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  style={{
+                    background: isSelected ? 'var(--accent-bg)' : 'var(--bg-tertiary)',
+                  }}
+                  onMouseEnter={(e) => !isSelected && (e.currentTarget.style.background = 'var(--bg-hover)')}
+                  onMouseLeave={(e) => !isSelected && (e.currentTarget.style.background = 'var(--bg-tertiary)')}
+                >
+                  <div className="flex items-center gap-3">
+                    <Maximize2
+                      className="w-4 h-4"
+                      style={{ color: isSelected ? 'var(--accent-primary)' : 'var(--text-tertiary)' }}
+                    />
+                    <span
+                      className="text-sm font-medium"
+                      style={{ color: isSelected ? 'var(--accent-primary)' : 'var(--text-primary)' }}
+                    >
+                      {size.label}
+                    </span>
+                  </div>
+                  <span
+                    className="text-xs"
+                    style={{ color: 'var(--text-tertiary)' }}
+                  >
+                    {size.width}×{size.height}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </section>
 
         {/* Custom Size */}
         <section>
-          <SectionTitle>Custom Size</SectionTitle>
-          <div className="flex gap-2">
+          <SectionLabel>직접 입력</SectionLabel>
+          <div
+            className="flex gap-3 p-4 rounded-2xl"
+            style={{ background: 'var(--bg-tertiary)' }}
+          >
             <div className="flex-1">
-              <label className="text-[10px] mb-1.5 block" style={{ color: 'var(--text-tertiary)' }}>
-                Width
+              <label className="text-[11px] font-medium mb-2 block" style={{ color: 'var(--text-tertiary)' }}>
+                너비
               </label>
               <input
                 type="number"
@@ -163,9 +186,12 @@ export function RightSidebar({
                 className="w-full"
               />
             </div>
+            <div className="flex items-end pb-3">
+              <span className="text-lg font-light" style={{ color: 'var(--text-muted)' }}>×</span>
+            </div>
             <div className="flex-1">
-              <label className="text-[10px] mb-1.5 block" style={{ color: 'var(--text-tertiary)' }}>
-                Height
+              <label className="text-[11px] font-medium mb-2 block" style={{ color: 'var(--text-tertiary)' }}>
+                높이
               </label>
               <input
                 type="number"
@@ -179,21 +205,33 @@ export function RightSidebar({
       </div>
 
       {/* Export Button */}
-      <div className="p-4 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
+      <div className="p-5">
         <button
           onClick={onExportClick}
           disabled={isExporting}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium text-sm transition-all"
+          className="w-full flex items-center justify-center gap-2 px-5 py-4 rounded-2xl font-semibold text-sm transition-all hover:opacity-90 active:scale-[0.98]"
           style={{
-            background: isExporting ? 'var(--bg-tertiary)' : 'var(--text-primary)',
-            color: isExporting ? 'var(--text-tertiary)' : 'var(--bg-primary)',
+            background: isExporting ? 'var(--bg-tertiary)' : 'var(--accent-primary)',
+            color: isExporting ? 'var(--text-tertiary)' : '#ffffff',
             opacity: isExporting ? 0.5 : 1,
             cursor: isExporting ? 'not-allowed' : 'pointer',
           }}
         >
-          <Download className="w-4 h-4" />
-          <span>{isExporting ? 'Exporting...' : 'Export'}</span>
+          {isExporting ? (
+            <>
+              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              <span>내보내는 중...</span>
+            </>
+          ) : (
+            <>
+              <Download className="w-4 h-4" />
+              <span>이미지 내보내기</span>
+            </>
+          )}
         </button>
+        <p className="text-[11px] text-center mt-3" style={{ color: 'var(--text-muted)' }}>
+          PNG 또는 JPEG • 2x 해상도
+        </p>
       </div>
     </aside>
   );

@@ -31,10 +31,11 @@ export function IPhoneFrame({ image, model, color, shadowIntensity, scale, onIma
 
   // Screen area position/size (percentage of frame, from image analysis)
   // Frame: 1508x3278, Screen: x=151, y=328, w=1205, h=2621
-  const screenLeft = (151 / 1508) * 100;      // ~10.01%
-  const screenTop = (328 / 3278) * 100;       // ~10.01%
-  const screenWidth = (1205 / 1508) * 100;    // ~79.91%
-  const screenHeight = (2621 / 3278) * 100;   // ~79.96%
+  // Adjusted: left -2px, right +4px (width +6px), top -1px, bottom +2px (height +3px)
+  const screenLeft = ((151 - 2) / 1508) * 100;      // ~9.88% (moved 2px left)
+  const screenTop = ((328 - 1) / 3278) * 100;       // ~9.98% (moved 1px up)
+  const screenWidth = ((1205 + 6) / 1508) * 100;    // ~80.30% (expanded 6px)
+  const screenHeight = ((2621 + 3) / 3278) * 100;   // ~80.05% (expanded 3px total)
 
   // For display mode: show only screen area without frame
   const displayWidth = (screenWidth / 100) * frameWidth;
