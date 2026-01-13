@@ -1,5 +1,8 @@
 import { GradientPreset, IPhoneModelConfig, IPhoneColorConfig, PixelModelConfig, PixelColorConfig, BrowserConfig } from './types';
 
+// Base path for assets (set in next.config.ts)
+const basePath = process.env.NODE_ENV === 'production' ? '/ollim' : '';
+
 export const IPHONE_MODELS: IPhoneModelConfig[] = [
   {
     id: 'iphone-17',
@@ -12,7 +15,7 @@ export const IPHONE_MODELS: IPhoneModelConfig[] = [
     screenHeight: 80.0,
     screenBorderRadius: 8,
     year: 2025,
-    thumbImage: '/devices/iphone-17.png',
+    thumbImage: `${basePath}/devices/iphone-17.png`,
     screenResolution: '1206 / 2622',
   },
 ];
@@ -21,43 +24,43 @@ export const IPHONE_COLORS: IPhoneColorConfig[] = [
   {
     id: 'black',
     name: 'Black',
-    frameImage: '/frames/iphone-17/black.png',
-    thumbImage: '/thumbs/iphone-17/black.png',
+    frameImage: `${basePath}/frames/iphone-17/black.png`,
+    thumbImage: `${basePath}/thumbs/iphone-17/black.png`,
     previewColor: '#1c1c1e',
   },
   {
     id: 'lavender',
     name: 'Lavender',
-    frameImage: '/frames/iphone-17/lavender.png',
-    thumbImage: '/thumbs/iphone-17/lavender.png',
+    frameImage: `${basePath}/frames/iphone-17/lavender.png`,
+    thumbImage: `${basePath}/thumbs/iphone-17/lavender.png`,
     previewColor: '#c8b6e2',
   },
   {
     id: 'sage',
     name: 'Sage',
-    frameImage: '/frames/iphone-17/sage.png',
-    thumbImage: '/thumbs/iphone-17/sage.png',
+    frameImage: `${basePath}/frames/iphone-17/sage.png`,
+    thumbImage: `${basePath}/thumbs/iphone-17/sage.png`,
     previewColor: '#b8c9b8',
   },
   {
     id: 'mist-blue',
     name: 'Mist Blue',
-    frameImage: '/frames/iphone-17/mist-blue.png',
-    thumbImage: '/thumbs/iphone-17/mist-blue.png',
+    frameImage: `${basePath}/frames/iphone-17/mist-blue.png`,
+    thumbImage: `${basePath}/thumbs/iphone-17/mist-blue.png`,
     previewColor: '#a8c4d4',
   },
   {
     id: 'white',
     name: 'White',
-    frameImage: '/frames/iphone-17/white.png',
-    thumbImage: '/thumbs/iphone-17/white.png',
+    frameImage: `${basePath}/frames/iphone-17/white.png`,
+    thumbImage: `${basePath}/thumbs/iphone-17/white.png`,
     previewColor: '#f5f5f7',
   },
   {
     id: 'display',
     name: 'Display',
-    frameImage: '/frames/iphone-17/display.svg',
-    thumbImage: '/thumbs/iphone-17/display.png',
+    frameImage: `${basePath}/frames/iphone-17/display.svg`,
+    thumbImage: `${basePath}/thumbs/iphone-17/display.png`,
     previewColor: '#3f3f46',
     is3D: true,
   },
@@ -75,7 +78,7 @@ export const PIXEL_MODELS: PixelModelConfig[] = [
     screenHeight: 91.5,
     screenBorderRadius: 7,
     year: 2022,
-    thumbImage: '/devices/pixel-7-pro.png',
+    thumbImage: `${basePath}/devices/pixel-7-pro.png`,
     screenResolution: '1080 / 2340',
   },
 ];
@@ -84,29 +87,29 @@ export const PIXEL_COLORS: PixelColorConfig[] = [
   {
     id: 'obsidian',
     name: 'Obsidian',
-    frameImage: '/frames/pixel-7-pro/obsidian.png',
-    thumbImage: '/thumbs/pixel-7-pro/obsidian.png',
+    frameImage: `${basePath}/frames/pixel-7-pro/obsidian.png`,
+    thumbImage: `${basePath}/thumbs/pixel-7-pro/obsidian.png`,
     previewColor: '#1a1a1a',
   },
   {
     id: 'snow',
     name: 'Snow',
-    frameImage: '/frames/pixel-7-pro/snow.png',
-    thumbImage: '/thumbs/pixel-7-pro/snow.png',
+    frameImage: `${basePath}/frames/pixel-7-pro/snow.png`,
+    thumbImage: `${basePath}/thumbs/pixel-7-pro/snow.png`,
     previewColor: '#f5f5f5',
   },
   {
     id: 'hazel',
     name: 'Hazel',
-    frameImage: '/frames/pixel-7-pro/hazel.png',
-    thumbImage: '/thumbs/pixel-7-pro/hazel.png',
+    frameImage: `${basePath}/frames/pixel-7-pro/hazel.png`,
+    thumbImage: `${basePath}/thumbs/pixel-7-pro/hazel.png`,
     previewColor: '#c4b8a5',
   },
   {
     id: 'display',
     name: 'Display',
-    frameImage: '/frames/pixel-7-pro/display.svg',
-    thumbImage: '/thumbs/pixel-7-pro/display.png',
+    frameImage: `${basePath}/frames/pixel-7-pro/display.svg`,
+    thumbImage: `${basePath}/thumbs/pixel-7-pro/display.png`,
     previewColor: '#3f3f46',
     is3D: true,
   },
@@ -118,13 +121,13 @@ export const BROWSER_CONFIGS: BrowserConfig[] = [
     name: 'Safari',
     themes: {
       light: {
-        frameImage: '/frames/browser/safari-light.png',
-        thumbImage: '/thumbs/browser/safari-light.png',
+        frameImage: `${basePath}/frames/browser/safari-light.png`,
+        thumbImage: `${basePath}/thumbs/browser/safari-light.png`,
         previewColor: '#f5f5f7',
       },
       dark: {
-        frameImage: '/frames/browser/safari-dark.png',
-        thumbImage: '/thumbs/browser/safari-dark.png',
+        frameImage: `${basePath}/frames/browser/safari-dark.png`,
+        thumbImage: `${basePath}/thumbs/browser/safari-dark.png`,
         previewColor: '#1c1c1e',
       },
     },
@@ -141,13 +144,13 @@ export const BROWSER_CONFIGS: BrowserConfig[] = [
     name: 'Chrome',
     themes: {
       light: {
-        frameImage: '/frames/browser/chrome-light.png',
-        thumbImage: '/thumbs/browser/chrome-light.png',
+        frameImage: `${basePath}/frames/browser/chrome-light.png`,
+        thumbImage: `${basePath}/thumbs/browser/chrome-light.png`,
         previewColor: '#dee1e6',
       },
       dark: {
-        frameImage: '/frames/browser/chrome-dark.png',
-        thumbImage: '/thumbs/browser/chrome-dark.png',
+        frameImage: `${basePath}/frames/browser/chrome-dark.png`,
+        thumbImage: `${basePath}/thumbs/browser/chrome-dark.png`,
         previewColor: '#202124',
       },
     },
