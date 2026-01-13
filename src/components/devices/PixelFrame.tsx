@@ -29,13 +29,18 @@ export function PixelFrame({ image, model, color, shadowIntensity, scale, onImag
   const frameWidth = scale;
   const frameHeight = Math.round(frameWidth * (1301 / 600));
 
-  // Screen area from PNG analysis: x=60, y=130, w=480, h=1042
-  // For display mode: show only screen area (480x1042 ratio)
-  const displayWidth = (480 / 600) * frameWidth;
-  const displayHeight = (1042 / 600) * frameWidth;
+  // Screen area from SVG: x=57, y=127, w=486, h=1048
+  const screenLeft = (57 / 600) * 100;       // ~9.5%
+  const screenTop = (127 / 1301) * 100;      // ~9.76%
+  const screenWidth = (486 / 600) * 100;     // ~81%
+  const screenHeight = (1048 / 1301) * 100;  // ~80.55%
 
-  // Border radius for display mode (38px at 600px width)
-  const screenBorderRadius = (38 / 600) * frameWidth;
+  // For display mode: show only screen area
+  const displayWidth = (screenWidth / 100) * frameWidth;
+  const displayHeight = (screenHeight / 100) * frameHeight;
+
+  // Border radius (24px at 600px width from SVG)
+  const screenBorderRadius = (24 / 600) * frameWidth;
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -68,19 +73,18 @@ export function PixelFrame({ image, model, color, shadowIntensity, scale, onImag
         filter: `drop-shadow(0 ${shadowSpread}px ${shadowBlur}px rgba(0, 0, 0, ${shadowOpacity}))`,
       }}
     >
-      {/* Screenshot layer with SVG mask */}
+      {/* Screenshot layer */}
       <div
-        className="absolute cursor-pointer group"
+        className="absolute cursor-pointer group overflow-hidden"
         style={isDisplayMode ? {
           inset: 0,
           borderRadius: `${screenBorderRadius}px`,
-          overflow: 'hidden',
         } : {
-          inset: 0,
-          maskImage: 'url(/frames/pixel-7-pro/display.svg)',
-          WebkitMaskImage: 'url(/frames/pixel-7-pro/display.svg)',
-          maskSize: '100% 100%',
-          WebkitMaskSize: '100% 100%',
+          left: `${screenLeft}%`,
+          top: `${screenTop}%`,
+          width: `${screenWidth}%`,
+          height: `${screenHeight}%`,
+          borderRadius: `${screenBorderRadius}px`,
         }}
         onClick={handleScreenClick}
       >
