@@ -178,8 +178,11 @@ export const Canvas = forwardRef<HTMLDivElement, CanvasProps>(
           return (
             <BrowserFrame
               image={image}
-              borderRadius={12}
-              shadowIntensity={shadowIntensity}
+              browserType="safari"
+              browserTheme="light"
+              addressUrl=""
+              windowScale={100}
+              windowAspectRatio="auto"
               onImageSelect={onImageChange}
             />
           );
