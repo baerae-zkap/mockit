@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HelpCircle, X } from 'lucide-react';
+import { HelpCircle, X, Linkedin } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 
 const SHORTCUTS = [
@@ -106,6 +106,17 @@ export function Header() {
 
         {/* Right side */}
         <div className="flex items-center gap-3">
+          <motion.a
+            href="https://kr.linkedin.com/in/saltui"
+            target="_blank"
+            rel="noopener noreferrer"
+            whileHover={{ scale: 0.95 }}
+            whileTap={{ scale: 0.9 }}
+            className="w-8 h-8 rounded-xl flex items-center justify-center transition-colors hover:bg-[var(--bg-hover)]"
+            style={{ background: 'var(--bg-tertiary)' }}
+          >
+            <Linkedin className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
+          </motion.a>
           <motion.button
             whileHover={{ scale: 0.95 }}
             whileTap={{ scale: 0.9 }}

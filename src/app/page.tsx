@@ -140,7 +140,7 @@ export default function Home() {
           quality: options.quality / 100, // html-to-image uses 0-1 range
           backgroundColor: '#ffffff', // JPEG doesn't support transparency
         });
-        filename = generateExportFilename('ollim').replace('.png', '.jpg');
+        filename = generateExportFilename('mockit').replace('.png', '.jpg');
       } else {
         // PNG export (lossless)
         dataUrl = await toPng(canvasRef.current, {
@@ -148,7 +148,7 @@ export default function Home() {
           height: canvasHeight,
           pixelRatio: 2,
         });
-        filename = generateExportFilename('ollim');
+        filename = generateExportFilename('mockit');
       }
 
       // Restore preview transform

@@ -163,7 +163,7 @@ export function sanitizeFilename(filename: string): string {
 /**
  * Generate safe export filename
  */
-export function generateExportFilename(prefix = 'ollim'): string {
+export function generateExportFilename(prefix = 'mockit'): string {
   const timestamp = Date.now();
   const random = Math.random().toString(36).substring(2, 8);
   return sanitizeFilename(`${prefix}-${timestamp}-${random}.png`);

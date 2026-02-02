@@ -8,8 +8,8 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
-  basePath: isProd ? '/ollim' : '',
-  assetPrefix: isProd ? '/ollim/' : '',
+  basePath: isProd ? '/mockit' : '',
+  assetPrefix: isProd ? '/mockit/' : '',
 
   // Security headers
   async headers() {
