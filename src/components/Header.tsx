@@ -93,12 +93,11 @@ export function Header() {
       >
         {/* Logo */}
         <div className="flex items-center gap-2">
-          <div
-            className="w-8 h-8 rounded-xl flex items-center justify-center"
-            style={{ background: 'var(--accent-primary)' }}
-          >
-            <span className="text-white text-sm font-bold">O</span>
-          </div>
+          <img
+            src={`${process.env.NODE_ENV === 'production' ? '/mockit' : ''}/logo.svg`}
+            alt="Mockit"
+            className="w-8 h-8"
+          />
           <span className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>
             Mockit
           </span>
