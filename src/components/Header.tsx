@@ -100,7 +100,7 @@ export function Header() {
             <span className="text-white text-sm font-bold">O</span>
           </div>
           <span className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>
-            Ollim
+            Mockit
           </span>
         </div>
 
