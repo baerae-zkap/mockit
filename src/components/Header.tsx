@@ -94,7 +94,7 @@ export function Header() {
         {/* Logo */}
         <div className="flex items-center gap-2">
           <img
-            src={`${process.env.NODE_ENV === 'production' ? '/mockit' : ''}/logo.svg`}
+            src="/logo.svg"
             alt="Mockit"
             className="w-8 h-8"
           />

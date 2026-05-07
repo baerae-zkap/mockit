@@ -1,7 +1,7 @@
 import { GradientPreset, IPhoneModelConfig, IPhoneColorConfig, PixelModelConfig, PixelColorConfig, BrowserConfig } from './types';
 
 // Base path for assets (set in next.config.ts)
-const basePath = process.env.NODE_ENV === 'production' ? '/mockit' : '';
+const basePath = process.env.GITHUB_PAGES === 'true' ? '/mockit' : '';
 
 export const IPHONE_MODELS: IPhoneModelConfig[] = [
   {
